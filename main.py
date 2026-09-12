@@ -2,10 +2,9 @@ from parser import parse
 
 def convert_file(input_path, output_path):
     with open(input_path, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
+        lines = [line.rstrip('\n') for line in f.readlines()]
 
-    body_lines = [parse(line.rstrip('\n')) for line in lines if line.strip() != '']
-    body = '\n'.join(body_lines)
+    body = parse(lines)
 
     html_doc = f"""<!DOCTYPE html>
 <html lang="en">

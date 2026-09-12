@@ -5,10 +5,26 @@
     <title>Converted Markdown</title>
 </head>
 <body>
-<h1>My Test Document</h1>
-<h2>Introduction</h2>
-<p>This is a plain paragraph of text.</p>
-<h3>A smaller heading</h3>
-<p>Another paragraph here to check things work.</p>
+<h1>My Markdown Title</h1>
+<p>This is a paragraph with <strong>bold</strong> text and <em>italic</em> text. Here is a <a href="https://google.com">link</a>. We can also escape characters like **not bold** and test <code>inline code</code>.</p>
+<ul>
+<li>List item one</li>
+<li>List item two with nested:
+<ul>
+<li>Nested list item</li>
+<li>Another nested item</li>
+</ul></li>
+<li>List item three</li>
+</ul>
+<blockquote>
+<p>This is a blockquote. It can also span multiple lines.</p>
+<ul>
+<li>And have a list</li>
+<li>Inside it!</li>
+</ul>
+</blockquote>
+<pre><code>def hello_world():
+    print(&quot;Hello, world! &lt;script&gt;alert(1)&lt;/script&gt;&quot;)</code></pre>
+<p>Finally, testing &lt;script&gt; escape.</p>
 </body>
 </html>
