@@ -84,5 +84,32 @@ class TestMarkdownEngine(unittest.TestCase):
         expected = "<p>Paragraph one.</p>\n<p>Paragraph two.</p>"
         self.assertEqual(parse(lines), expected)
 
+    def test_gfm_strikethrough(self):
+        self.assertEqual(parse("This is ~~crossed out~~."), "<p>This is <del>crossed out</del>.</p>")
+
+    def test_gfm_autolinks(self):
+        self.assertEqual(parse("Link: <http://google.com>"), "<p>Link: <a href=\"http://google.com\">http://google.com</a></p>")
+        self.assertEqual(parse("Email: <test@example.com>"), "<p>Email: <a href=\"mailto:test@example.com\">test@example.com</a></p>")
+
+    def test_gfm_task_lists(self):
+        lines = ["- [ ] Incomplete", "- [x] Complete"]
+        expected = "<ul>\n<li><input type=\"checkbox\" disabled> Incomplete</li>\n<li><input type=\"checkbox\" disabled checked> Complete</li>\n</ul>"
+        self.assertEqual(parse(lines), expected)
+
+    def test_gfm_tables(self):
+        lines = [
+            "| Header 1 | Header 2 | Header 3 |",
+            "| :--- | :---: | ---: |",
+            "| Left | Center | Right |"
+        ]
+        expected = (
+            "<table>\n<thead>\n<tr>\n"
+            "<th align=\"left\">Header 1</th>\n<th align=\"center\">Header 2</th>\n<th align=\"right\">Header 3</th>\n"
+            "</tr>\n</thead>\n<tbody>\n<tr>\n"
+            "<td align=\"left\">Left</td>\n<td align=\"center\">Center</td>\n<td align=\"right\">Right</td>\n"
+            "</tr>\n</tbody>\n</table>"
+        )
+        self.assertEqual(parse(lines), expected)
+
 if __name__ == '__main__':
     unittest.main()

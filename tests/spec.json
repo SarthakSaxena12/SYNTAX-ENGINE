@@ -1,0 +1,12 @@
+[
+  {
+    "markdown": "# Spec Heading",
+    "html": "<h1>Spec Heading</h1>",
+    "example": 1
+  },
+  {
+    "markdown": "A paragraph with **bold**.",
+    "html": "<p>A paragraph with <strong>bold</strong>.</p>",
+    "example": 2
+  }
+]
