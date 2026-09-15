@@ -1,22 +1,32 @@
-# My Markdown Title
+# Markdown Engine Test
 
-This is a paragraph with **bold** text and *italic* text. Here is a [link](https://google.com).
-We can also escape characters like \*\*not bold\*\* and test `inline code`.
+This is a **bold** and *italic* paragraph with `inline code` and a [link](https://google.com). 
+Wait, what if I put `**bold code**` inside inline code? It should remain untouched!
 
-- List item one
-- List item two with nested:
+## Lists and Blockquotes
+
+- This is a list item
+- Another list item with a nested blockquote:
+  > **Blockquote** inside a list!
+  > It can also have multiple lines.
+- Third item
   - Nested list item
-  - Another nested item
-- List item three
+  - Another nested list item
 
-> This is a blockquote.
-> It can also span multiple lines.
-> - And have a list
-> - Inside it!
+> A blockquote at the root level.
+> - With a list inside
+> - It just works!
 
-```
+## Code Blocks
+
+```python
 def hello_world():
-    print("Hello, world! <script>alert(1)</script>")
+    print("Hello, **Markdown**!")
+    return <True>
 ```
 
-Finally, testing <script> escape.
+Testing multiple paragraphs.
+
+One paragraph.
+
+Another paragraph.

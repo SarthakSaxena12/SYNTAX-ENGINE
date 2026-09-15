@@ -1,137 +1,103 @@
 import re
 import html
+import uuid
 
-def apply_inline_formatting(text):
-    # Step 4: Escaping HTML
-    text = html.escape(text)
-    
-    # Step 5: Inline formatting (regex)
-    # Bold text
-    text = re.sub(r'(?<!\\)\*\*([^*]+)\*\*', r'<strong>\1</strong>', text)
-    # Italic text
-    text = re.sub(r'(?<!\\)\*([^*]+)\*', r'<em>\1</em>', text)
-    # Inline code
-    text = re.sub(r'(?<!\\)`([^`]+)`', r'<code>\1</code>', text)
-    # Links
-    text = re.sub(r'(?<!\\)\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', text)
-    
-    # Remove backslash escapes
-    text = re.sub(r'\\([\\`*_{}[\]()#+\-.!>])', r'\1', text)
-    
-    return text
-
-class HeadingRule:
-    pattern = re.compile(r'^(#{1,6})\s+(.*)$')
-    
-    @classmethod
-    def starts(cls, line):
-        return cls.pattern.match(line) is not None
+class InlineFormatter:
+    @staticmethod
+    def format(text):
+        # 1. Escape HTML first!
+        text = html.escape(text)
         
-    @classmethod
-    def consume(cls, lines, index):
-        line = lines[index]
-        match = cls.pattern.match(line)
-        level = len(match.group(1))
-        content = apply_inline_formatting(match.group(2).strip())
-        return f"<h{level}>{content}</h{level}>", 1
-
-class ListRule:
-    @classmethod
-    def starts(cls, line):
-        return line.startswith('- ')
-        
-    @classmethod
-    def consume(cls, lines, index):
-        from parser import parse_blocks
-        i = index
-        items_html = []
-        
-        while i < len(lines) and lines[i].strip():
-            if lines[i].startswith('- '):
-                item_text = apply_inline_formatting(lines[i][2:].strip())
-                i += 1
-                nested_lines = []
-                while i < len(lines) and lines[i].strip() and lines[i].startswith('  '):
-                    nested_lines.append(lines[i][2:])
-                    i += 1
-                
-                if nested_lines:
-                    nested_html = parse_blocks(nested_lines)
-                    items_html.append(f"<li>{item_text}\n{nested_html}</li>")
-                else:
-                    items_html.append(f"<li>{item_text}</li>")
-            else:
-                break
-                
-        html_out = "<ul>\n" + "\n".join(items_html) + "\n</ul>"
-        return html_out, (i - index)
-
-class BlockquoteRule:
-    @classmethod
-    def starts(cls, line):
-        return line.startswith('> ')
-        
-    @classmethod
-    def consume(cls, lines, index):
-        from parser import parse_blocks
-        i = index
-        quote_lines = []
-        while i < len(lines) and lines[i].strip():
-            if lines[i].startswith('> '):
-                quote_lines.append(lines[i][2:])
-                i += 1
-            elif lines[i].startswith('>'):
-                quote_lines.append(lines[i][1:])
-                i += 1
-            else:
-                break
-        
-        inner_html = parse_blocks(quote_lines)
-        return f"<blockquote>\n{inner_html}\n</blockquote>", (i - index)
-
-class CodeBlockRule:
-    @classmethod
-    def starts(cls, line):
-        return line.startswith('```')
-        
-    @classmethod
-    def consume(cls, lines, index):
-        i = index + 1
-        code_lines = []
-        while i < len(lines):
-            if lines[i].startswith('```'):
-                i += 1
-                break
-            code_lines.append(html.escape(lines[i]))
-            i += 1
-        
-        content = '\n'.join(code_lines)
-        return f"<pre><code>{content}</code></pre>", (i - index)
-
-class ParagraphRule:
-    @classmethod
-    def starts(cls, line):
-        return True
-        
-    @classmethod
-    def consume(cls, lines, index):
-        i = index
-        para_lines = []
-        while i < len(lines) and lines[i].strip():
-            if i > index:
-                if HeadingRule.starts(lines[i]) or ListRule.starts(lines[i]) or BlockquoteRule.starts(lines[i]) or CodeBlockRule.starts(lines[i]):
-                    break
-            para_lines.append(lines[i].strip())
-            i += 1
+        # 2. Extract inline code to protect it
+        code_blocks = {}
+        def replace_code(match):
+            uid = str(uuid.uuid4())
+            # Content of inline code shouldn't be formatted, but it is HTML escaped
+            code_blocks[uid] = f"<code>{match.group(1)}</code>"
+            return uid
             
-        content = ' '.join(para_lines)
-        content = apply_inline_formatting(content)
-        return f"<p>{content}</p>", (i - index)
+        # Match `...`
+        text = re.sub(r'(?<!\\)`([^`]+)`', replace_code, text)
+        
+        # 3. Apply other formatting
+        # Bold: **text**
+        text = re.sub(r'(?<!\\)\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
+        
+        # Italic: *text* (that are not bold)
+        text = re.sub(r'(?<!\\)\*(.+?)\*', r'<em>\1</em>', text)
+        
+        # Links: [text](url)
+        text = re.sub(r'(?<!\\)\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', text)
+        
+        # 4. Remove backslash escapes
+        text = re.sub(r'\\([\\`*_{}[\]()#+\-.!>])', r'\1', text)
+        
+        # 5. Restore inline code
+        for uid, code_html in code_blocks.items():
+            text = text.replace(uid, code_html)
+            
+        return text
 
-RULES = [
-    HeadingRule,
-    ListRule,
-    BlockquoteRule,
-    CodeBlockRule,
-    ParagraphRule,
-]
+class ASTNode:
+    def render(self):
+        raise NotImplementedError
+
+class Heading(ASTNode):
+    def __init__(self, level, text):
+        self.level = level
+        self.text = text
+        
+    def render(self):
+        content = InlineFormatter.format(self.text)
+        return f"<h{self.level}>{content}</h{self.level}>"
+
+class Paragraph(ASTNode):
+    def __init__(self, text):
+        self.text = text
+        
+    def render(self):
+        content = InlineFormatter.format(self.text)
+        return f"<p>{content}</p>"
+
+class Blockquote(ASTNode):
+    def __init__(self, children):
+        self.children = children
+        
+    def render(self):
+        inner_html = "\n".join(child.render() for child in self.children)
+        return f"<blockquote>\n{inner_html}\n</blockquote>"
+
+class TextNode(ASTNode):
+    def __init__(self, text):
+        self.text = text
+        
+    def render(self):
+        return InlineFormatter.format(self.text)
+
+class ListItem(ASTNode):
+    def __init__(self, children):
+        self.children = children
+        
+    def render(self):
+        if len(self.children) == 1 and isinstance(self.children[0], TextNode):
+            return f"<li>{self.children[0].render()}</li>"
+        else:
+            inner_html = "\n".join(child.render() for child in self.children)
+            return f"<li>\n{inner_html}\n</li>"
+
+class List(ASTNode):
+    def __init__(self, items):
+        self.items = items
+        
+    def render(self):
+        inner_html = "\n".join(item.render() for item in self.items)
+        return f"<ul>\n{inner_html}\n</ul>"
+
+class CodeBlock(ASTNode):
+    def __init__(self, text):
+        self.text = text
+        
+    def render(self):
+        # Code block contents are HTML escaped, but inline formatting is NOT applied.
+        content = html.escape(self.text)
+        return f"<pre><code>{content}</code></pre>"

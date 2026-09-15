@@ -41,6 +41,48 @@ class TestMarkdownEngine(unittest.TestCase):
         lines = ["```", "**bold** code", "```"]
         expected = "<pre><code>**bold** code</code></pre>"
         self.assertEqual(parse(lines), expected)
+        
+    def test_complex_inline_styles(self):
+        lines = ["Here is **bold and *italic* inside** bold.", "", "And a **[link](http://example.com)**."]
+        expected = "<p>Here is <strong>bold and <em>italic</em> inside</strong> bold.</p>\n<p>And a <strong><a href=\"http://example.com\">link</a></strong>.</p>"
+        self.assertEqual(parse(lines), expected)
+        
+    def test_inline_code_protection(self):
+        lines = ["This is `some **bold** code` and this is **bold**."]
+        expected = "<p>This is <code>some **bold** code</code> and this is <strong>bold</strong>.</p>"
+        self.assertEqual(parse(lines), expected)
+
+    def test_complex_block_nesting(self):
+        lines = [
+            "- List item 1",
+            "  > Blockquote in list",
+            "  > - Nested list in blockquote",
+            "- List item 2"
+        ]
+        expected = (
+            "<ul>\n"
+            "<li>\n"
+            "List item 1\n"
+            "<blockquote>\n"
+            "<p>Blockquote in list</p>\n"
+            "<ul>\n"
+            "<li>Nested list in blockquote</li>\n"
+            "</ul>\n"
+            "</blockquote>\n"
+            "</li>\n"
+            "<li>List item 2</li>\n"
+            "</ul>"
+        )
+        self.assertEqual(parse(lines), expected)
+        
+    def test_multiple_paragraphs(self):
+        lines = [
+            "Paragraph one.",
+            "",
+            "Paragraph two."
+        ]
+        expected = "<p>Paragraph one.</p>\n<p>Paragraph two.</p>"
+        self.assertEqual(parse(lines), expected)
 
 if __name__ == '__main__':
     unittest.main()

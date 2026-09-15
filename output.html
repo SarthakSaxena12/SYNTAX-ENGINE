@@ -5,26 +5,38 @@
     <title>Converted Markdown</title>
 </head>
 <body>
-<h1>My Markdown Title</h1>
-<p>This is a paragraph with <strong>bold</strong> text and <em>italic</em> text. Here is a <a href="https://google.com">link</a>. We can also escape characters like **not bold** and test <code>inline code</code>.</p>
+<h1>Markdown Engine Test</h1>
+<p>This is a <strong>bold</strong> and <em>italic</em> paragraph with <code>inline code</code> and a <a href="https://google.com">link</a>. Wait, what if I put <code>**bold code**</code> inside inline code? It should remain untouched!</p>
+<h2>Lists and Blockquotes</h2>
 <ul>
-<li>List item one</li>
-<li>List item two with nested:
+<li>This is a list item</li>
+<li>
+Another list item with a nested blockquote:
+<blockquote>
+<p><strong>Blockquote</strong> inside a list! It can also have multiple lines.</p>
+</blockquote>
+</li>
+<li>
+Third item
 <ul>
 <li>Nested list item</li>
-<li>Another nested item</li>
-</ul></li>
-<li>List item three</li>
+<li>Another nested list item</li>
+</ul>
+</li>
 </ul>
 <blockquote>
-<p>This is a blockquote. It can also span multiple lines.</p>
+<p>A blockquote at the root level.</p>
 <ul>
-<li>And have a list</li>
-<li>Inside it!</li>
+<li>With a list inside</li>
+<li>It just works!</li>
 </ul>
 </blockquote>
+<h2>Code Blocks</h2>
 <pre><code>def hello_world():
-    print(&quot;Hello, world! &lt;script&gt;alert(1)&lt;/script&gt;&quot;)</code></pre>
-<p>Finally, testing &lt;script&gt; escape.</p>
+    print(&quot;Hello, **Markdown**!&quot;)
+    return &lt;True&gt;</code></pre>
+<p>Testing multiple paragraphs.</p>
+<p>One paragraph.</p>
+<p>Another paragraph.</p>
 </body>
 </html>
