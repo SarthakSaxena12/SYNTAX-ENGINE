@@ -2,7 +2,7 @@ import re
 import html
 import uuid
 
-# --- AST Nodes ---
+# AST Nodes
 class ASTNode:
     def render(self):
         raise NotImplementedError
@@ -94,7 +94,7 @@ class Table(ASTNode):
         return "\n".join(html_out)
 
 
-# --- Registry & Rules ---
+# Registry & Rules
 class ParserRegistry:
     def __init__(self):
         self.block_rules = []
